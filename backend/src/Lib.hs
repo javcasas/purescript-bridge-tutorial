@@ -10,6 +10,7 @@ import Data.Aeson.TH
 import Network.Wai
 import Network.Wai.Handler.Warp
 import Servant
+import Network.Wai.Middleware.Cors
 
 data Scientist = Scientist
   { sId        :: Int
@@ -28,7 +29,7 @@ startApp = do
   putStrLn "Finished"
 
 app :: Application
-app = serve api server
+app = simpleCors (serve api server)
 
 api :: Proxy API
 api = Proxy
