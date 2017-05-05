@@ -40,4 +40,6 @@ server = return scientists
 scientists :: [Scientist]
 scientists = [ Scientist 1 "Isaac" "Newton"
              , Scientist 2 "Albert" "Einstein"
+             , Scientist 3 "Gottfried" "Leibniz"
+             , Scientist 4 "Stephen" "Hawking"
              ]
