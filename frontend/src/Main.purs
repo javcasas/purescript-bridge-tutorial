@@ -6,21 +6,21 @@ import App.Layout (Action(PageView, ScientistsLoaded, Nop), State, view, update)
 import Control.Bind ((=<<))
 import Control.Monad.Eff (Eff)
 import DOM (DOM)
-import Prelude (bind, pure, ($), unit, (<>))
+import Prelude (bind, pure, ($), show, unit)
 import Pux (App, Config, CoreEffects, fromSimple, renderToDOM, start)
 import Pux.Devtool (Action, start) as Pux.Devtool
 import Pux.Router (sampleUrl)
 import Signal ((~>))
 
-import Control.Monad.Aff (runAff)
 import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Eff.Console (log, CONSOLE)
+import Control.Monad.Aff (runAff)
+import Control.Monad.Eff.Exception.Unsafe (unsafeThrow)
+import Control.Monad.Eff.Console (CONSOLE, log)
 import Data.Either (Either(..))
 import Data.HTTP.Method (Method(..))
 import Network.HTTP.Affjax (affjax, defaultRequest, AJAX)
-import Signal.Channel (channel, Channel, subscribe, CHANNEL, send)
-import Data.Argonaut.Decode.Class (class DecodeJson, decodeJson)
-import Data.Either (either)
+import Signal.Channel (channel, subscribe, CHANNEL, send)
+import Data.Argonaut.Decode.Class (decodeJson)
 
 
 type AppEffects = (dom :: DOM, console :: CONSOLE, ajax :: AJAX)
@@ -37,13 +37,20 @@ config state = do
   chan <- channel Nop
   let signal = subscribe chan
   let dataArrivedSignal = signal ~> \a -> a
-  runAff (\e -> pure unit) (\s -> send chan s) do
-    res <- affjax $ defaultRequest { url = "http://localhost:8080/scientist", method = Left GET }
-    pure $ ScientistsLoaded $ Scientist.State {
-      scientists: either (\_ -> []) (\a -> a) $ decodeJson res.response
-      , current: 0
-    }
-
+  let logError e = do
+                    log e
+                    unsafeThrow e
+  runAff (\e -> liftEff $ logError $ show e) (\s -> pure unit) do
+    request <- affjax $ defaultRequest { url = "http://localhost:8080/scientist", method = Left GET }
+    let result = do
+                  scientists <- decodeJson request.response
+                  pure $ ScientistsLoaded $ Scientist.State {
+                                                scientists: scientists
+                                                , current: 0
+                                              }
+    case result of
+      Left error -> liftEff $ logError error
+      Right r -> liftEff $ send chan r
 
   pure
     { initialState: state
