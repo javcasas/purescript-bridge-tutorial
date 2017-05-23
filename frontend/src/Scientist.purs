@@ -15,20 +15,17 @@ data Action = Next | Previous
 
 data Scientist = Scientist {
                  id :: Int
-               , firstName :: String
-               , lastName :: String
+               , names :: Array String
                }
 
 instance decodeScientist :: DecodeJson Scientist where
   decodeJson j = case toObject j of
                   Just o -> do
                     id <- o .? "sId"
-                    firstName <- o .? "sFirstName"
-                    lastName <- o .? "sLastName"
+                    names <- o .? "sNames"
                     pure $ Scientist {
                         id: id,
-                        firstName: firstName,
-                        lastName: lastName
+                        names: names
                       }
                   Nothing -> Left "Noparse"
 
@@ -72,7 +69,7 @@ view (State s) =
       div []
         [
           div [] [
-            h2 [] [ text $ scientist.firstName <> " " <> scientist.lastName ]
+            h2 [] $ (\x -> text (x <> " ")) <$> scientist.names
           ]
         , button [ onClick (const Previous) ] [ text "Prev. Scientist" ]
         , button [ onClick (const Next) ] [ text "Next Scientist" ]
