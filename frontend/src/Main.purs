@@ -21,6 +21,7 @@ import Data.HTTP.Method (Method(..))
 import Network.HTTP.Affjax (affjax, defaultRequest, AJAX)
 import Signal.Channel (channel, subscribe, CHANNEL, send)
 import Data.Argonaut.Decode.Class (decodeJson)
+import Data.Argonaut.Generic.Aeson as Aeson
 
 
 type AppEffects = (dom :: DOM, console :: CONSOLE, ajax :: AJAX)
@@ -43,7 +44,7 @@ config state = do
   runAff (\e -> liftEff $ logError $ show e) (\s -> pure unit) do
     request <- affjax $ defaultRequest { url = "http://localhost:8080/scientist", method = Left GET }
     let result = do
-                  scientists <- decodeJson request.response
+                  scientists <- Aeson.decodeJson request.response
                   pure $ ScientistsLoaded $ Scientist.State {
                                                 scientists: scientists
                                                 , current: 0

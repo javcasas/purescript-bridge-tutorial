@@ -10,24 +10,9 @@ import Data.Argonaut.Decode.Class (class DecodeJson, decodeJson)
 import Data.Argonaut.Decode ((.?))
 import Data.Argonaut.Core (toObject)
 import Data.Either (Either(..))
+import Types (Scientist(..))
 
 data Action = Next | Previous
-
-data Scientist = Scientist {
-                 id :: Int
-               , names :: Array String
-               }
-
-instance decodeScientist :: DecodeJson Scientist where
-  decodeJson j = case toObject j of
-                  Just o -> do
-                    id <- o .? "sId"
-                    names <- o .? "sNames"
-                    pure $ Scientist {
-                        id: id,
-                        names: names
-                      }
-                  Nothing -> Left "Noparse"
 
 data State = State {
   scientists :: Array Scientist
@@ -69,7 +54,7 @@ view (State s) =
       div []
         [
           div [] [
-            h2 [] $ (\x -> text (x <> " ")) <$> scientist.names
+            h2 [] $ (\x -> text (x <> " ")) <$> scientist.sNames
           ]
         , button [ onClick (const Previous) ] [ text "Prev. Scientist" ]
         , button [ onClick (const Next) ] [ text "Next Scientist" ]
