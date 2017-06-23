@@ -1,7 +1,8 @@
 module App.Scientist where
 
 import Prelude ((+), (-), const, show, ($), (<=), (>=), bind, pure, (<>), (<$>))
-import Pux.Html (Html, div, span, button, text, h2)
+import Pux.Html (Html, div, span, button, text, h2, img)
+import Pux.Html.Attributes (src, height)
 import Pux.Html.Events (onClick)
 import Data.Array (length, (!!))
 import Data.Maybe (Maybe(..))
@@ -54,6 +55,7 @@ view (State s) =
       div []
         [
           div [] [
+            img [ src scientist.sPhotoUrl, height "400px" ] [],
             h2 [] $ (\x -> text (x <> " ")) <$> scientist.sNames
           ]
         , button [ onClick (const Previous) ] [ text "Prev. Scientist" ]
